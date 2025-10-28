@@ -43,15 +43,16 @@ jobs:
     # 6️⃣ Determine service image names dynamically
     - name: Tag and Push API image
       run: |
-        API_IMAGE=$(docker compose images -q api)
-        docker tag $API_IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
+        docker compose build api
+        docker tag mlops-house-pricing-api:latest ${{ secrets.DOCKERHUB_USERNAME }}/mlops-house-pricing-api:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlops-house-pricing-api:latest
 
     - name: Tag and Push Trainer image
       run: |
-        TRAINER_IMAGE=$(docker compose images -q trainer)
-        docker tag $TRAINER_IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
+        docker compose build trainer
+        docker tag mlops-house-pricing-trainer:latest ${{ secrets.DOCKERHUB_USERNAME }}/mlops-house-pricing-trainer:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlops-house-pricing-trainer:latest
+
 
     # 7️⃣ Cleanup all containers and volumes
     - name: Cleanup
