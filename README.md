@@ -96,6 +96,40 @@ Expected output:
 
 
 
+DVC Integration
+
+The California housing dataset is tracked via DVC.
+
+Run dvc pull to ensure the dataset is available for training.
+
+Add new datasets or updates via DVC commands:
+   ```bash
+   dvc add data/california_housing.csv
+   dvc commit
+   dvc push
+   ```
+
+
+Training & Model:
+
+- Trainer runs inside the trainer container.
+
+- Model saved as model.joblib including feature columns.
+
+- RMSE is logged for validation metrics.
+
+
+Contributing:
+
+- Fork the repository
+
+- Create a feature branch
+
+- Make changes & commit
+
+- Push and open a Pull Request
+
+
 
 Notes:
 - This demo uses an sqlite backend for MLflow (file mlflow/mlflow.db inside the mlflow_store volume).

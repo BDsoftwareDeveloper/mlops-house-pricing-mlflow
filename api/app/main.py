@@ -8,17 +8,28 @@ MODEL_PATH = os.environ.get("MODEL_PATH", "/app/models/model.joblib")
 
 app = FastAPI(title="House Price Predictor (demo)")
 
+# Only feature columns (exclude target)
 class PredictRequest(BaseModel):
-    features: list
+    MedInc: float
+    HouseAge: float
+    AveRooms: float
+    AveBedrms: float
+    Population: float
+    AveOccup: float
+    Latitude: float
+    Longitude: float
 
 model_artifact = None
+feature_columns = []
 
 def load_model(path=MODEL_PATH):
-    global model_artifact
+    global model_artifact, feature_columns
     if not os.path.exists(path):
         raise FileNotFoundError(f"Model not found at {path}. Has the trainer run?")
     model_artifact = joblib.load(path)
-    print("Model loaded. Columns:", model_artifact.get("columns"))
+    # Exclude target column automatically
+    feature_columns = [c for c in model_artifact.get("columns") if c != "MedHouseVal"]
+    print("Model loaded. Feature columns:", feature_columns)
 
 @app.on_event("startup")
 def startup_event():
@@ -34,11 +45,10 @@ async def predict(req: PredictRequest):
             load_model()
         except Exception as e:
             raise HTTPException(status_code=503, detail=f"Model not ready: {e}")
-    cols = model_artifact.get("columns")
+
     model = model_artifact.get("model")
-    features = req.features
-    if len(features) != len(cols):
-        raise HTTPException(status_code=400, detail=f"Expected {len(cols)} features in order {cols}")
+    # Convert request to ordered feature array
+    features = [getattr(req, col) for col in feature_columns]
     arr = np.array(features).reshape(1, -1)
     pred = model.predict(arr)[0]
     return {"prediction": float(pred)}
