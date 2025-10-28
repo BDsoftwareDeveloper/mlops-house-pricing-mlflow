@@ -1,4 +1,3 @@
-# Trainer logs experiment and model to MLflow tracking server, registers model, and saves local artifact.
 import os
 import time
 import mlflow
@@ -22,7 +21,6 @@ def wait_for_mlflow(uri, timeout=30):
     while True:
         try:
             resp = requests.get(uri)
-            # if reachable, break
             print("MLflow reachable:", resp.status_code)
             break
         except Exception as e:
@@ -43,8 +41,11 @@ except Exception:
 
 print("Loading California housing dataset...")
 data = fetch_california_housing(as_frame=True)
-X = data.data
-y = data.target
+df = data.frame
+
+# Use only feature columns for X
+X = df.drop("MedHouseVal", axis=1)  # 8 features only
+y = df["MedHouseVal"]
 
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -54,7 +55,11 @@ model = RandomForestRegressor(n_estimators=n_estimators, random_state=42)
 model.fit(X_train, y_train)
 
 preds = model.predict(X_val)
-rmse = mean_squared_error(y_val, preds) ** 0.5
+
+# Fixed RMSE calculation (compatible with all sklearn versions)
+mse = mean_squared_error(y_val, preds)
+rmse = np.sqrt(mse)
+
 print(f"Validation RMSE: {rmse:.4f}")
 
 # Start MLflow run and log params/metrics/model
@@ -64,10 +69,10 @@ with mlflow.start_run() as run:
     mlflow.log_param("n_estimators", n_estimators)
     mlflow.log_metric("rmse", float(rmse))
 
-    # log sklearn model artifact (this also saves artifacts to mlflow server)
+    # log sklearn model artifact
     mlflow.sklearn.log_model(model, artifact_path="model")
 
-    # Register the model in the MLflow Model Registry (best-effort; may fail if server not configured)
+    # Register the model in the MLflow Model Registry
     model_uri = f"runs:/{run_id}/model"
     try:
         mv = mlflow.register_model(model_uri, MODEL_NAME)
@@ -75,7 +80,7 @@ with mlflow.start_run() as run:
     except Exception as e:
         print("Model registration failed (continuing):", e)
 
-# Also save a local joblib to shared volume so API can load it
+# Save a local joblib to shared volume so API can load it
 print(f"Saving model locally to {MODEL_PATH}")
 joblib.dump({"model": model, "columns": list(X.columns)}, MODEL_PATH)
 
