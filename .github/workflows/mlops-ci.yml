@@ -14,40 +14,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1️⃣ Checkout repo
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # 2️⃣ Set up Docker Buildx
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    # 3️⃣ Login to Docker Hub
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    # 4️⃣ Build images for all services in docker-compose
     - name: Build MLflow + API + Trainer containers
       run: |
-        docker compose build
+        docker compose build --pull --progress=plain
 
-    - name: Run Training step
+    # 5️⃣ Run Training step and fail if trainer fails
+    - name: Run Trainer
       run: |
-        docker compose up trainer --exit-code-from trainer || true
-        echo "Training complete."
+        docker compose up --abort-on-container-exit trainer
+        docker compose ps
 
+    # 6️⃣ Determine service image names dynamically
     - name: Tag and Push API image
       run: |
-        docker tag mlops_house_pricing-api:latest \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
-        docker push \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
+        API_IMAGE=$(docker compose images -q api)
+        docker tag $API_IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-api:latest
 
     - name: Tag and Push Trainer image
       run: |
-        docker tag mlops_house_pricing-trainer:latest \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
-        docker push \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
+        TRAINER_IMAGE=$(docker compose images -q trainer)
+        docker tag $TRAINER_IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-trainer:latest
 
+    # 7️⃣ Cleanup all containers and volumes
     - name: Cleanup
-      run: docker compose down -v
+      run: docker compose down -v --remove-orphans
