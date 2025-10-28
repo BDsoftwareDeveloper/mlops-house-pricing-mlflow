@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  mlflow:
+    build: ./mlflow
+    container_name: mlops-house-pricing-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_store:/mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://0.0.0.0:5000
+  trainer:
+    build: ./trainer
+    container_name: mlops-house-pricing-trainer
+    depends_on:
+      - mlflow
+    volumes:
+      - models:/app/models
+      - mlflow_store:/mlflow
+    restart: "no"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+  api:
+    build: ./api
+    container_name: mlops-house-pricing-api
+    depends_on:
+      - trainer
+    ports:
+      - "8000:8000"
+    volumes:
+      - models:/app/models
+    environment:
+      - MODEL_PATH=/app/models/model.joblib
+volumes:
+  models:
+  mlflow_store:

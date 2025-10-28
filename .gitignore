@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+*.sqlite3
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints
+
+# PyCharm/VSCode
+.idea/
+.vscode/
+
+# Docker
+*.log
+*.pid
+*.tmp
+*.bak
+docker-compose.override.yml
+mlflow/mlflow.db
+mlflow/artifacts/
+
+# MacOS
+.DS_Store
+
+# pytest
+.pytest_cache/
+
+# Coverage
+htmlcov/
+.coverage
