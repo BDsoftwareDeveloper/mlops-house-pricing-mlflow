@@ -23,7 +23,16 @@ into a shared Docker volume, and serves predictions from a FastAPI `api` service
 
 3. Test prediction (example using curl):
    ```bash
-   curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [8, 41, 6, 2, 5, 1, 3000, 2]}'
+   curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{
+  "MedInc": 8.3252,
+  "HouseAge": 41,
+  "AveRooms": 6.984127,
+  "AveBedrms": 1.02381,
+  "Population": 322,
+  "AveOccup": 2.555556,
+  "Latitude": 37.88,
+  "Longitude": -122.23
+}'
    ```
 
 4. Add GitHub secrets for CI/CD
