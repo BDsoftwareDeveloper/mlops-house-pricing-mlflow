@@ -11,6 +11,7 @@ services:
 
   trainer:
     build: ./trainer
+    image: mlops-house-pricing-trainer:latest
     container_name: mlops-house-pricing-trainer
     depends_on:
       - mlflow
@@ -23,6 +24,7 @@ services:
 
   api:
     build: ./api
+    image: mlops-house-pricing-api:latest
     container_name: mlops-house-pricing-api
     depends_on:
       - trainer
