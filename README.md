@@ -56,7 +56,9 @@ In your GitHub repo → Settings → Secrets → Actions:
 Expected output:
 
 ```json
-{"prediction": 2.5}
+{
+    "prediction": 4.255782800000002
+}
 ```
 
 
