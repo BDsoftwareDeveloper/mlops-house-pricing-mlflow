@@ -41,7 +41,16 @@ In your GitHub repo → Settings → Secrets → Actions:
 
    curl -X POST "http://localhost:8000/predict" \
 -H "Content-Type: application/json" \
--d '{"features": [0.038, 0.02, 5.0, 1.0, 0.02, 3.0, 37.0, -122.0]}'
+-d '{
+           "MedInc": 8.3252,
+           "HouseAge": 41,
+           "AveRooms": 6.984127,
+           "AveBedrms": 1.02381,
+           "Population": 322,
+           "AveOccup": 2.555556,
+           "Latitude": 37.88,
+           "Longitude": -122.23
+         }'
 ```
 
 Expected output:
